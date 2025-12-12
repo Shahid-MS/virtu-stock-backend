@@ -23,6 +23,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -54,6 +55,10 @@ public class User {
     @Column(name = "full_name")
     private String fullName;
 
+    @Column(nullable = true, length = 15)
+    @Pattern(regexp = "^[0-9]{10}$", message = "Phone number must be exactly 10 digits")
+    private String phone;
+
     @Transient
     @NotBlank(message = "First name is required")
     @Size(min = 3, max = 20, message = "First name must be 3 characters long")
@@ -72,6 +77,14 @@ public class User {
     private boolean enabled;
     @Column(name = "created_At")
     private LocalDateTime createdAt;
+
+    @Pattern(regexp = "^(https?://)?(www\\.)?linkedin\\.com/.*$", message = "Invalid LinkedIn profile URL")
+    @Column(nullable = true, length = 255)
+    private String linkedinUrl;
+
+    @Pattern(regexp = "^(https?://)?(www\\.)?instagram\\.com/.*$", message = "Invalid Instagram profile URL")
+    @Column(nullable = true, length = 255)
+    private String instagramUrl;
 
     public String getFullName() {
         return (fullName != null) ? fullName.replace("|", " ") : null;

@@ -18,4 +18,7 @@ public class UserResponseDTO {
     private String lastName;
     private String email;
     private List<Role> roles;
+    private String phone;
+    private String instagramUrl;
+    private String linkedinUrl;
 }
