@@ -61,7 +61,7 @@ public class AuthController {
 
         String jwt = jwtUtil.generateToken(customUserDetails);
 
-        return ResponseEntity.ok(Map.of("virtustock-token", jwt));
+        return ResponseEntity.ok(Map.of("message", "Login Successfully", "virtustock-token", jwt));
 
     }
 

@@ -68,7 +68,7 @@ public class AppliedIpoController {
         appliedIpo.setAllotment(AllotmentStatus.NOT_ALLOTED);
         appliedIpoService.save(appliedIpo);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(Map.of("Message", "Successfully created", "appliedIpoId", appliedIpo.getId()));
+                .body(Map.of("message", "Successfully marked as apply", "appliedIpoId", appliedIpo.getId()));
     }
 
     @GetMapping("/check-applied-ipo")
@@ -110,7 +110,6 @@ public class AppliedIpoController {
             @RequestParam(defaultValue = AppConstants.PAGE_SIZE) int size,
             @RequestParam(defaultValue = "ipo.startDate") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir) {
-
         String email = principal.getName();
         User user = userService.findByEmail(email);
 

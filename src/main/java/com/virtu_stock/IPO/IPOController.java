@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -25,26 +26,27 @@ public class IPOController {
     private final ModelMapper modelMapper;
 
     @GetMapping
-    public PageResponseDTO<IPOResponseDTO> findAll(
+    public ResponseEntity<PageResponseDTO<IPOResponseDTO>> findAll(
             @RequestParam(defaultValue = AppConstants.PAGE_NUMBER) int page,
             @RequestParam(defaultValue = AppConstants.PAGE_SIZE) int size,
             @RequestParam(defaultValue = "startDate") String sortBy,
             @RequestParam(defaultValue = "DESC") String sortDir) {
         // Integer.parseInt(AppConstants.PAGE_SIZE)
-        return ipoService.findAll(page, size, sortBy, sortDir);
+
+        return ResponseEntity.ok(ipoService.findAll(page, size, sortBy, sortDir));
     }
 
     @GetMapping(params = "status")
-    public List<IPOResponseDTO> findByStatus(@RequestParam String status) {
+    public ResponseEntity<List<IPOResponseDTO>> findByStatus(@RequestParam String status) {
         List<IPO> ipos = ipoService.findByStatus(status);
         List<IPOResponseDTO> iposDTO = ipos.stream().map(ipo -> modelMapper.map(ipo, IPOResponseDTO.class)).toList();
-        return iposDTO;
+        return ResponseEntity.ok(iposDTO);
     }
 
     @GetMapping("/{id}")
-    public IPOResponseDTO findById(@PathVariable UUID id) {
+    public ResponseEntity<IPOResponseDTO> findById(@PathVariable UUID id) {
         IPO ipo = ipoService.findById(id);
-        return modelMapper.map(ipo, IPOResponseDTO.class);
+        return ResponseEntity.ok(modelMapper.map(ipo, IPOResponseDTO.class));
     }
 
 }
