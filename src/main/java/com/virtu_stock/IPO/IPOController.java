@@ -49,4 +49,12 @@ public class IPOController {
         return ResponseEntity.ok(modelMapper.map(ipo, IPOResponseDTO.class));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<List<IPOSearchResponse>> searchQuery(@RequestParam String query) {
+        List<IPO> search = ipoService.search(query);
+        List<IPOSearchResponse> searchRes = search.stream().map(ipo -> modelMapper.map(ipo, IPOSearchResponse.class))
+                .toList();
+        return ResponseEntity.ok(searchRes);
+    }
+
 }

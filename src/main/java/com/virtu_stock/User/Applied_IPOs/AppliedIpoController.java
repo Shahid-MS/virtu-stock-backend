@@ -101,7 +101,7 @@ public class AppliedIpoController {
         }
         appliedIpoService.deleteByUserAndIpo(user, ipo);
         return ResponseEntity.ok(Map.of(
-                "message", "Unmarked successfully"));
+                "message", "Unmarked as applied successfully"));
     }
 
     @GetMapping("/applied-ipo")

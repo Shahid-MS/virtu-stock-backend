@@ -67,7 +67,7 @@ public class AllotedIpoController {
         }
         allotedIpoService.save(allotedIpo);
         AllotedIPOResponseDTO res = modelMapper.map(allotedIpo, AllotedIPOResponseDTO.class);
-        return ResponseEntity.ok(res);
+        return ResponseEntity.ok(Map.of("message", "Updated Successfully", "alloted", res));
     }
 
 }

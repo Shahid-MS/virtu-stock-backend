@@ -159,4 +159,14 @@ public class IPOService {
         return ipoRepository.countIpoByMonthAndYear(year);
     }
 
+    public List<IPO> search(String query) {
+        query = query.trim();
+        if (query.length() <= 2) {
+            return List.of();
+        }
+        List<IPO> search = ipoRepository.findByNameContainingIgnoreCaseOrSymbolContainingIgnoreCaseOrderByName(query,
+                query);
+        return search.stream().limit(7).toList();
+    }
+
 }
