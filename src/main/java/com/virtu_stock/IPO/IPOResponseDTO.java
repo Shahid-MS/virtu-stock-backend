@@ -2,12 +2,12 @@ package com.virtu_stock.IPO;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.virtu_stock.Enum.IPOStatus;
 import com.virtu_stock.Enum.Verdict;
 import com.virtu_stock.GMP.GMP;
-import com.virtu_stock.Subscription.Subscription;
 
 import lombok.Data;
 
@@ -43,7 +43,7 @@ public class IPOResponseDTO {
 
     private List<String> risks;
 
-    private List<Subscription> subscriptions;
+    private Map<String, Double> subscriptions;
 
     private List<GMP> gmp;
     private Double listingReturn;

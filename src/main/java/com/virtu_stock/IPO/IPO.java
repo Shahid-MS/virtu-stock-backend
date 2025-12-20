@@ -4,14 +4,15 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.virtu_stock.Enum.IPOStatus;
 import com.virtu_stock.Enum.Verdict;
 import com.virtu_stock.GMP.GMP;
-import com.virtu_stock.Subscription.Subscription;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -23,8 +24,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
@@ -41,6 +44,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class IPO {
+    private static final List<String> FIXED_ORDER = List.of("QIB", "Non-Institutional", "Retailer");
+    private static final String TOTAL_KEY = "Total";
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -97,6 +103,9 @@ public class IPO {
     @Column(columnDefinition = "TEXT")
     private String about;
 
+    @Column(name = "subscription-lastUpdated")
+    private LocalDateTime subscriptionLastUpdated;
+
     @Enumerated(EnumType.STRING)
     private Verdict verdict;
 
@@ -110,9 +119,16 @@ public class IPO {
     @Column(name = "risk")
     private List<String> risks;
 
+    // @ElementCollection
+    // @CollectionTable(name = "subscription", joinColumns = @JoinColumn(name =
+    // "ipo_id"))
+    // private List<Subscription> subscriptions;
+
     @ElementCollection
     @CollectionTable(name = "subscription", joinColumns = @JoinColumn(name = "ipo_id"))
-    private List<Subscription> subscriptions;
+    @MapKeyColumn(name = "name")
+    @Column(name = "subscription_value")
+    private Map<String, Double> subscriptions;
 
     @ElementCollection
     @CollectionTable(name = "gmp", joinColumns = @JoinColumn(name = "ipo_id"))
@@ -120,14 +136,15 @@ public class IPO {
     private List<GMP> gmp;
 
     @PrePersist
+    @PreUpdate
     public void initializeDefaults() {
-        // subscription
+        // Subscriptions (Map)
         if (subscriptions == null || subscriptions.isEmpty()) {
-            subscriptions = new ArrayList<>();
-            subscriptions.add(new Subscription("QIB", 0.00));
-            subscriptions.add(new Subscription("Non-Institutional", 0.00));
-            subscriptions.add(new Subscription("Retailer", 0.00));
-            subscriptions.add(new Subscription("Total", 0.00));
+            subscriptions = new LinkedHashMap<>();
+            subscriptions.put("QIB", 0.0);
+            subscriptions.put("Non-Institutional", 0.0);
+            subscriptions.put("Retailer", 0.0);
+            subscriptions.put("Total", 0.0);
         }
         // GMP
         if (gmp == null || gmp.isEmpty()) {
@@ -139,7 +156,30 @@ public class IPO {
         if (verdict == null) {
             verdict = Verdict.NOT_REVIEWED;
         }
+        normalizeSubscriptionsOrder();
+        subscriptionLastUpdated = LocalDateTime.now();
+    }
 
+    private void normalizeSubscriptionsOrder() {
+        if (subscriptions == null || subscriptions.isEmpty())
+            return;
+
+        Map<String, Double> current = new LinkedHashMap<>(subscriptions);
+        LinkedHashMap<String, Double> ordered = new LinkedHashMap<>();
+
+        for (String key : FIXED_ORDER) {
+            ordered.put(key, current.getOrDefault(key, 0.0));
+            current.remove(key);
+        }
+
+        current.forEach((key, value) -> {
+            if (!key.equalsIgnoreCase(TOTAL_KEY)) {
+                ordered.put(key, value);
+            }
+        });
+        ordered.put(TOTAL_KEY, current.getOrDefault(TOTAL_KEY, 0.0));
+        subscriptions.clear();
+        subscriptions.putAll(ordered);
     }
 
     @Transient
