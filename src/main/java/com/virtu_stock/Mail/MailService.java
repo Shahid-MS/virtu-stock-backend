@@ -386,7 +386,6 @@ public class MailService {
                             <th  style="background-color:#ffecec; color:#1a1a1a; padding:10px; text-align:left;">Message</th>
                              """);
         }
-        
 
         sb.append("</tr>");
 
@@ -400,7 +399,7 @@ public class MailService {
                 sb.append("""
                          <td style="padding:10px; border-bottom:1px solid #ddd; color:#1d2939 !important;">%s</td>
                         """.formatted(ipo.get("type")));
-            }        
+            }
 
             if (hasReason) {
                 sb.append("""
@@ -412,7 +411,6 @@ public class MailService {
                          <td style="padding:10px; border-bottom:1px solid #ddd; color:#1d2939 !important;">%s</td>
                         """.formatted(ipo.get("message")));
             }
-            
 
             sb.append("</tr>");
         }

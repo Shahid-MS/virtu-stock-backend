@@ -16,6 +16,8 @@ public interface IPORepository extends JpaRepository<IPO, UUID>, JpaSpecificatio
 
     public List<IPO> findByListingDateLessThanEqual(LocalDate date);
 
+    public List<IPO> findByNameContainingIgnoreCaseOrSymbolContainingIgnoreCaseOrderByName(String name, String symbol);
+
     @Query("""
                 SELECT MONTH(i.startDate), COUNT(i)
                 FROM IPO i
