@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.MapKeyColumn;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import jakarta.validation.constraints.NotBlank;
@@ -44,8 +44,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class IPO {
-    private static final List<String> FIXED_ORDER = List.of("QIB", "Non-Institutional", "Retailer");
-    private static final String TOTAL_KEY = "Total";
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -136,11 +134,10 @@ public class IPO {
     private List<GMP> gmp;
 
     @PrePersist
-    @PreUpdate
     public void initializeDefaults() {
         // Subscriptions (Map)
         if (subscriptions == null || subscriptions.isEmpty()) {
-            subscriptions = new LinkedHashMap<>();
+            subscriptions = new HashMap<>();
             subscriptions.put("QIB", 0.0);
             subscriptions.put("Non-Institutional", 0.0);
             subscriptions.put("Retailer", 0.0);
@@ -156,30 +153,7 @@ public class IPO {
         if (verdict == null) {
             verdict = Verdict.NOT_REVIEWED;
         }
-        normalizeSubscriptionsOrder();
         subscriptionLastUpdated = LocalDateTime.now();
-    }
-
-    private void normalizeSubscriptionsOrder() {
-        if (subscriptions == null || subscriptions.isEmpty())
-            return;
-
-        Map<String, Double> current = new LinkedHashMap<>(subscriptions);
-        LinkedHashMap<String, Double> ordered = new LinkedHashMap<>();
-
-        for (String key : FIXED_ORDER) {
-            ordered.put(key, current.getOrDefault(key, 0.0));
-            current.remove(key);
-        }
-
-        current.forEach((key, value) -> {
-            if (!key.equalsIgnoreCase(TOTAL_KEY)) {
-                ordered.put(key, value);
-            }
-        });
-        ordered.put(TOTAL_KEY, current.getOrDefault(TOTAL_KEY, 0.0));
-        subscriptions.clear();
-        subscriptions.putAll(ordered);
     }
 
     @Transient

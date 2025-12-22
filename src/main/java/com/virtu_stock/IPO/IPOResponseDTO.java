@@ -1,6 +1,7 @@
 package com.virtu_stock.IPO;
 
 import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -13,6 +14,8 @@ import lombok.Data;
 
 @Data
 public class IPOResponseDTO {
+    private static final List<String> FIXED_ORDER = List.of("QIB", "Non-Institutional", "Retailer");
+    private static final String TOTAL_KEY = "Total";
 
     private UUID id;
     private String name;
@@ -43,9 +46,31 @@ public class IPOResponseDTO {
 
     private List<String> risks;
 
-    private Map<String, Double> subscriptions;
+    private LinkedHashMap<String, Double> subscriptions;
 
     private List<GMP> gmp;
     private Double listingReturn;
     private Double listingReturnPercent;
+
+    public void normalizeSubscriptionsOrder() {
+        if (subscriptions == null || subscriptions.isEmpty())
+            return;
+
+        Map<String, Double> current = new LinkedHashMap<>(subscriptions);
+        LinkedHashMap<String, Double> ordered = new LinkedHashMap<>();
+
+        for (String key : FIXED_ORDER) {
+            ordered.put(key, current.getOrDefault(key, 0.0));
+            current.remove(key);
+        }
+
+        current.forEach((key, value) -> {
+            if (!key.equalsIgnoreCase(TOTAL_KEY)) {
+                ordered.put(key, value);
+            }
+        });
+        ordered.put(TOTAL_KEY, current.getOrDefault(TOTAL_KEY, 0.0));
+        subscriptions.clear();
+        subscriptions.putAll(ordered);
+    }
 }

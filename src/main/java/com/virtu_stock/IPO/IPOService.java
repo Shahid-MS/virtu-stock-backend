@@ -56,6 +56,7 @@ public class IPOService {
         Page<IPO> pageDetails = ipoRepository.findAll(pageable);
         List<IPO> ipos = pageDetails.getContent();
         List<IPOResponseDTO> iposDTO = ipos.stream().map(ipo -> modelMapper.map(ipo, IPOResponseDTO.class)).toList();
+        iposDTO.forEach(IPOResponseDTO::normalizeSubscriptionsOrder);
         PageResponseDTO<IPOResponseDTO> ipoPageResponseDTO = new PageResponseDTO<IPOResponseDTO>();
         ipoPageResponseDTO.setContent(iposDTO);
         ipoPageResponseDTO.setPageNumber(pageDetails.getNumber());
