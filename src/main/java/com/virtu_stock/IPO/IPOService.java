@@ -104,9 +104,42 @@ public class IPOService {
 
             ipo.getSubscriptions().keySet().removeIf(key -> !PROTECTED_KEYS.contains(key) &&
                     !ipoReq.getSubscriptions().containsKey(key));
+            ipo.setSubscriptions(ipoReq.getSubscriptions());
+            ipo.setSubscriptionLastUpdated(LocalDateTime.now());
         }
 
+        if (ipoReq.getGmp() != null) {
+            List<GMP> existingGmp = ipo.getGmp();
+            for (GMP g : ipoReq.getGmp()) {
+                if (g.getGmpDate().isBefore(ipo.getStartDate()) || g.getGmpDate().isAfter(ipo.getListingDate())) {
+                    throw new BadRequestException("GMP date " + g.getGmpDate() +
+                            " must be between IPO open date (" + ipo.getStartDate() +
+                            ") and listing date (" + ipo.getListingDate() + ")");
+                }
+
+                Optional<GMP> foundGMP = existingGmp.stream().filter(s -> s.getGmpDate().equals(g.getGmpDate()))
+                        .findFirst();
+                if (foundGMP.isPresent()) {
+                    if (foundGMP.get().getGmp() != g.getGmp()) {
+                        foundGMP.get().setGmp(g.getGmp());
+                        foundGMP.get().setLastUpdated(LocalDateTime.now());
+                    }
+                } else {
+                    existingGmp.add(GMP.builder().gmp(g.getGmp()).gmpDate(g.getGmpDate())
+                            .lastUpdated(LocalDateTime.now()).build());
+                }
+                ipo.setGmp(existingGmp);
+            }
+        }
+
+        modelMapper.typeMap(IPOUpdateRequestDTO.class, IPO.class)
+                .addMappings(mapper -> mapper.skip(IPO::setSubscriptions))
+                .addMappings(mapper -> mapper.skip(IPO::setGmp));
+        modelMapper.getConfiguration()
+                .setSkipNullEnabled(true);
+
         modelMapper.map(ipoReq, ipo);
+
         IPO savedIpo = save(ipo);
         return modelMapper.map(savedIpo, IPOResponseDTO.class);
     }

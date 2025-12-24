@@ -1,9 +1,7 @@
 package com.virtu_stock.Admin;
 
-import java.util.Arrays;
 import java.util.HashMap;
 
-import java.util.List;
 import java.util.Map;
 
 import java.util.UUID;
@@ -19,18 +17,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.virtu_stock.Enum.Verdict;
-import com.virtu_stock.Exceptions.CustomExceptions.BadRequestException;
-import com.virtu_stock.GMP.GMP;
-import com.virtu_stock.IPO.IPO;
 import com.virtu_stock.IPO.IPOResponseDTO;
 import com.virtu_stock.IPO.IPOService;
 import com.virtu_stock.IPO.IPOUpdateRequestDTO;
-import com.virtu_stock.IPO.IssueSize;
+
 import com.virtu_stock.Security.Util.AuthUtil;
 
 import lombok.RequiredArgsConstructor;
