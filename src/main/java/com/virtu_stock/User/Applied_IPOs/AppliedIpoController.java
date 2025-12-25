@@ -50,7 +50,6 @@ public class AppliedIpoController {
 
     @PostMapping("/apply")
     public ResponseEntity<?> markAsApplied(@Valid @RequestBody AppliedIpoRequestDTO request, Principal principal) {
-
         String email = principal.getName();
         User user = userService.findByEmail(email);
 
