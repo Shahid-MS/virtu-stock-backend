@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
@@ -23,7 +24,6 @@ import com.virtu_stock.Exceptions.CustomExceptions.InvalidSortFieldException;
 import com.virtu_stock.Exceptions.CustomExceptions.ResourceNotFoundException;
 import com.virtu_stock.GMP.GMP;
 import com.virtu_stock.Pagination.PageResponseDTO;
-import com.virtu_stock.Subscription.Subscription;
 
 import lombok.RequiredArgsConstructor;
 
@@ -56,6 +56,7 @@ public class IPOService {
         Page<IPO> pageDetails = ipoRepository.findAll(pageable);
         List<IPO> ipos = pageDetails.getContent();
         List<IPOResponseDTO> iposDTO = ipos.stream().map(ipo -> modelMapper.map(ipo, IPOResponseDTO.class)).toList();
+        iposDTO.forEach(IPOResponseDTO::normalizeSubscriptionsOrder);
         PageResponseDTO<IPOResponseDTO> ipoPageResponseDTO = new PageResponseDTO<IPOResponseDTO>();
         ipoPageResponseDTO.setContent(iposDTO);
         ipoPageResponseDTO.setPageNumber(pageDetails.getNumber());
@@ -89,25 +90,58 @@ public class IPOService {
         return ipoRepository.save(ipo);
     }
 
-    public void updateSubscriptions(IPO existingIpo, List<Subscription> newSubs) {
-        List<Subscription> existingSubs = existingIpo.getSubscriptions();
-        for (Subscription subs : newSubs) {
-            Optional<Subscription> foundSub = existingSubs.stream()
-                    .filter(s -> s.getName().equalsIgnoreCase(subs.getName()))
-                    .findFirst();
-            if (foundSub.isPresent()) {
-                if (foundSub.get().getSubsvalue() != subs.getSubsvalue()) {
-                    foundSub.get().setSubsvalue(subs.getSubsvalue());
+    public IPOResponseDTO updateIpo(UUID id, IPOUpdateRequestDTO ipoReq) {
+        IPO ipo = findById(id);
+        if (ipoReq.getSubscriptions() != null) {
+            Set<String> PROTECTED_KEYS = Set.of(
+                    "QIB", "Non-Institutional", "Retailer", "Total");
+            for (String protectedKey : PROTECTED_KEYS) {
+                if (!ipoReq.getSubscriptions().containsKey(protectedKey)) {
+                    throw new BadRequestException(
+                            "Subscription '" + protectedKey + "' cannot be deleted");
                 }
-            } else {
-                existingSubs.add(
-                        Subscription.builder()
-                                .name(subs.getName())
-                                .subsvalue(subs.getSubsvalue())
-                                .build());
+            }
+
+            ipo.getSubscriptions().keySet().removeIf(key -> !PROTECTED_KEYS.contains(key) &&
+                    !ipoReq.getSubscriptions().containsKey(key));
+            ipo.setSubscriptions(ipoReq.getSubscriptions());
+            ipo.setSubscriptionLastUpdated(LocalDateTime.now());
+        }
+
+        if (ipoReq.getGmp() != null) {
+            List<GMP> existingGmp = ipo.getGmp();
+            for (GMP g : ipoReq.getGmp()) {
+                if (g.getGmpDate().isBefore(ipo.getStartDate()) || g.getGmpDate().isAfter(ipo.getListingDate())) {
+                    throw new BadRequestException("GMP date " + g.getGmpDate() +
+                            " must be between IPO open date (" + ipo.getStartDate() +
+                            ") and listing date (" + ipo.getListingDate() + ")");
+                }
+
+                Optional<GMP> foundGMP = existingGmp.stream().filter(s -> s.getGmpDate().equals(g.getGmpDate()))
+                        .findFirst();
+                if (foundGMP.isPresent()) {
+                    if (foundGMP.get().getGmp() != g.getGmp()) {
+                        foundGMP.get().setGmp(g.getGmp());
+                        foundGMP.get().setLastUpdated(LocalDateTime.now());
+                    }
+                } else {
+                    existingGmp.add(GMP.builder().gmp(g.getGmp()).gmpDate(g.getGmpDate())
+                            .lastUpdated(LocalDateTime.now()).build());
+                }
+                ipo.setGmp(existingGmp);
             }
         }
-        existingIpo.setSubscriptions(existingSubs);
+
+        modelMapper.typeMap(IPOUpdateRequestDTO.class, IPO.class)
+                .addMappings(mapper -> mapper.skip(IPO::setSubscriptions))
+                .addMappings(mapper -> mapper.skip(IPO::setGmp));
+        modelMapper.getConfiguration()
+                .setSkipNullEnabled(true);
+
+        modelMapper.map(ipoReq, ipo);
+
+        IPO savedIpo = save(ipo);
+        return modelMapper.map(savedIpo, IPOResponseDTO.class);
     }
 
     public void updateGmp(IPO existingIpo, List<GMP> newGmp) {

@@ -1,9 +1,7 @@
 package com.virtu_stock.Admin;
 
-import java.util.Arrays;
 import java.util.HashMap;
 
-import java.util.List;
 import java.util.Map;
 
 import java.util.UUID;
@@ -19,18 +17,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.virtu_stock.Enum.Verdict;
-import com.virtu_stock.Exceptions.CustomExceptions.BadRequestException;
-import com.virtu_stock.GMP.GMP;
-import com.virtu_stock.IPO.IPO;
+import com.virtu_stock.IPO.IPOResponseDTO;
 import com.virtu_stock.IPO.IPOService;
-import com.virtu_stock.IPO.IssueSize;
+import com.virtu_stock.IPO.IPOUpdateRequestDTO;
+
 import com.virtu_stock.Security.Util.AuthUtil;
-import com.virtu_stock.Subscription.Subscription;
+
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -58,50 +50,52 @@ public class AdminController {
     }
 
     @PutMapping("/ipo/{id}")
-    public ResponseEntity<?> updateIpo(@PathVariable UUID id, @RequestBody JsonNode ipoNode) {
+    public ResponseEntity<?> updateIpo(@PathVariable UUID id, @RequestBody IPOUpdateRequestDTO ipoReq) {
 
-        IPO existingIpo = ipoService.findById(id);
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JavaTimeModule());
-        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        ipoNode.fieldNames().forEachRemaining(fieldName -> {
-            switch (fieldName.toLowerCase()) {
-                case "subscriptions" -> {
-                    List<Subscription> newSubs = Arrays.asList(
-                            mapper.convertValue(ipoNode.get(fieldName), Subscription[].class));
-                    ipoService.updateSubscriptions(existingIpo, newSubs);
-                }
+        IPOResponseDTO ipo = ipoService.updateIpo(id, ipoReq);
+        return ResponseEntity.ok(Map.of("message", "Updated Successfully", "IPO", ipo));
 
-                case "gmp" -> {
-                    List<GMP> newGmp = Arrays.asList(
-                            mapper.convertValue(ipoNode.get(fieldName), GMP[].class));
-                    ipoService.updateGmp(existingIpo,
-                            newGmp);
-                }
+        // ObjectMapper mapper = new ObjectMapper();
+        // mapper.registerModule(new JavaTimeModule());
+        // mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        // ipoNode.fieldNames().forEachRemaining(fieldName -> {
+        // switch (fieldName.toLowerCase()) {
+        // // case "subscriptions" -> {
+        // // List<Subscription> newSubs = Arrays.asList(
+        // // mapper.convertValue(ipoNode.get(fieldName), Subscription[].class));
+        // // ipoService.updateSubscriptions(existingIpo, newSubs);
+        // // }
 
-                case "verdict" -> {
-                    String verdictStr = ipoNode.get(fieldName).asText();
-                    try {
-                        Verdict newVerdict = Verdict.valueOf(verdictStr.toUpperCase());
-                        ipoService.updateVerdict(existingIpo, newVerdict);
-                    } catch (IllegalArgumentException e) {
-                        throw new BadRequestException("Invalid Verdict Value: " + verdictStr);
-                    }
-                }
+        // case "gmp" -> {
+        // List<GMP> newGmp = Arrays.asList(
+        // mapper.convertValue(ipoNode.get(fieldName), GMP[].class));
+        // ipoService.updateGmp(existingIpo,
+        // newGmp);
+        // }
 
-                case "issuesize" -> {
-                    IssueSize newIssueSize = mapper.convertValue(ipoNode.get(fieldName),
-                            IssueSize.class);
-                    ipoService.updateIssueSize(existingIpo, newIssueSize);
-                }
+        // case "verdict" -> {
+        // String verdictStr = ipoNode.get(fieldName).asText();
+        // try {
+        // Verdict newVerdict = Verdict.valueOf(verdictStr.toUpperCase());
+        // ipoService.updateVerdict(existingIpo, newVerdict);
+        // } catch (IllegalArgumentException e) {
+        // throw new BadRequestException("Invalid Verdict Value: " + verdictStr);
+        // }
+        // }
 
-                default -> throw new BadRequestException("Invalid field: " + fieldName);
+        // case "issuesize" -> {
+        // IssueSize newIssueSize = mapper.convertValue(ipoNode.get(fieldName),
+        // IssueSize.class);
+        // ipoService.updateIssueSize(existingIpo, newIssueSize);
+        // }
 
-            }
-        });
+        // default -> throw new BadRequestException("Invalid field: " + fieldName);
 
-        IPO updatedIpo = ipoService.save(existingIpo);
-        return ResponseEntity.ok(updatedIpo);
+        // }
+        // });
+
+        // IPO updatedIpo = ipoService.save(existingIpo);
+        // return ResponseEntity.ok(updatedIpo);
 
     }
 
@@ -110,6 +104,5 @@ public class AdminController {
         ipoService.findById(id);
         ipoService.deleteById(id);
         return ResponseEntity.ok().body("IPO deleted with id: " + id);
-
     }
 }

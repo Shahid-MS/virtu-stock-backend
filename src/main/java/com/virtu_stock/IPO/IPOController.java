@@ -40,13 +40,16 @@ public class IPOController {
     public ResponseEntity<List<IPOResponseDTO>> findByStatus(@RequestParam String status) {
         List<IPO> ipos = ipoService.findByStatus(status);
         List<IPOResponseDTO> iposDTO = ipos.stream().map(ipo -> modelMapper.map(ipo, IPOResponseDTO.class)).toList();
+        iposDTO.forEach(IPOResponseDTO::normalizeSubscriptionsOrder);
         return ResponseEntity.ok(iposDTO);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<IPOResponseDTO> findById(@PathVariable UUID id) {
         IPO ipo = ipoService.findById(id);
-        return ResponseEntity.ok(modelMapper.map(ipo, IPOResponseDTO.class));
+        IPOResponseDTO ipoRes = modelMapper.map(ipo, IPOResponseDTO.class);
+        ipoRes.normalizeSubscriptionsOrder();
+        return ResponseEntity.ok(ipoRes);
     }
 
     @GetMapping("/search")

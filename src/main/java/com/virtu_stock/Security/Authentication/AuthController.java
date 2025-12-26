@@ -145,7 +145,6 @@ public class AuthController {
         if (!userService.existsByEmail(email)) {
             throw new ResourceNotFoundException("User", "email", email);
         }
-
         otpService.generateAndSendOtp(email, OTPPurpose.FORGOT_PASSWORD);
         return ResponseEntity.ok(Map.of("message", "OTP sent successfully to " + email + ". Valid for 5 minutes."));
 
