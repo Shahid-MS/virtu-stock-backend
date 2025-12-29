@@ -30,6 +30,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final Validator validator;
+    private final ModelMapper modelMapper;
 
     public User registerUser(User user) {
         if (userRepository.existsByEmail(user.getEmail())) {
@@ -58,9 +59,7 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public void updateUser(String email, Map<String, Object> updates) {
-        User user = findByEmail(email);
-
+    public UserResponseDTO updateUser(User user, Map<String, Object> updates) {
         UserRequestDTO dto = new ObjectMapper().convertValue(updates, UserRequestDTO.class);
         Set<ConstraintViolation<UserRequestDTO>> violations = validator.validate(dto);
         if (!violations.isEmpty()) {
@@ -81,6 +80,7 @@ public class UserService {
         ModelMapper localMapper = new ModelMapper();
         localMapper.getConfiguration().setSkipNullEnabled(true);
         localMapper.map(dto, user);
-        userRepository.save(user);
+        User updatedUser = userRepository.save(user);
+        return modelMapper.map(updatedUser, UserResponseDTO.class);
     }
 }

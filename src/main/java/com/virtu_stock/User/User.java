@@ -73,7 +73,6 @@ public class User {
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"))
     @Column(name = "role")
     private List<Role> roles;
-
     private boolean enabled;
     @Column(name = "created_At")
     private LocalDateTime createdAt;
@@ -85,6 +84,9 @@ public class User {
     @Pattern(regexp = "^(https?://)?(www\\.)?instagram\\.com/.*$", message = "Invalid Instagram profile URL")
     @Column(nullable = true, length = 255)
     private String instagramUrl;
+
+    @Column
+    private String profilePicUrl;
 
     public String getFullName() {
         return (fullName != null) ? fullName.replace("|", " ") : null;

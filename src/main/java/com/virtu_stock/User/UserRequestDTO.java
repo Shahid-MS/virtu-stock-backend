@@ -25,4 +25,7 @@ public class UserRequestDTO {
 
     @Pattern(regexp = "^(https?://)?(www\\.)?instagram\\.com/.*$", message = "Invalid Instagram profile URL")
     private String instagramUrl;
+    
+    private String profilePicUrl;
+
 }

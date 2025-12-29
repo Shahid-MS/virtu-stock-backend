@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import com.virtu_stock.Configurations.AppConstants;
 import com.virtu_stock.Enum.IPOStatus;
-import com.virtu_stock.Enum.Verdict;
 import com.virtu_stock.Exceptions.CustomExceptions.BadRequestException;
 import com.virtu_stock.Exceptions.CustomExceptions.InvalidPaginationParameterException;
 import com.virtu_stock.Exceptions.CustomExceptions.InvalidSortFieldException;
@@ -142,42 +141,6 @@ public class IPOService {
 
         IPO savedIpo = save(ipo);
         return modelMapper.map(savedIpo, IPOResponseDTO.class);
-    }
-
-    public void updateGmp(IPO existingIpo, List<GMP> newGmp) {
-        List<GMP> existingGMP = existingIpo.getGmp();
-        for (GMP g : newGmp) {
-            Optional<GMP> foundGMP = existingGMP.stream().filter(s -> s.getGmpDate().equals(g.getGmpDate()))
-                    .findFirst();
-            if (foundGMP.isPresent()) {
-                if (foundGMP.get().getGmp() != g.getGmp()) {
-                    foundGMP.get().setGmp(g.getGmp());
-                    foundGMP.get().setLastUpdated(LocalDateTime.now());
-                }
-            } else {
-                existingGMP.add(GMP.builder().gmp(g.getGmp()).gmpDate(g.getGmpDate())
-                        .lastUpdated(LocalDateTime.now()).build());
-            }
-        }
-        existingIpo.setGmp(existingGMP);
-    }
-
-    public void updateVerdict(IPO existingIpo, Verdict newVerdict) {
-        if (existingIpo.getVerdict() != newVerdict) {
-            existingIpo.setVerdict(newVerdict);
-        }
-    }
-
-    public void updateIssueSize(IPO existingIpo, IssueSize newIssueSize) {
-        if (existingIpo.getIssueSize().getFresh() != newIssueSize.getFresh()) {
-            existingIpo.getIssueSize().setFresh(newIssueSize.getFresh());
-        }
-        if (existingIpo.getIssueSize().getOfferForSale() != newIssueSize.getOfferForSale()) {
-            existingIpo.getIssueSize().setOfferForSale(newIssueSize.getOfferForSale());
-        }
-        if (existingIpo.getIssueSize().getTotalIssueSize() != newIssueSize.getTotalIssueSize()) {
-            existingIpo.getIssueSize().setTotalIssueSize(newIssueSize.getTotalIssueSize());
-        }
     }
 
     public void deleteById(UUID id) {

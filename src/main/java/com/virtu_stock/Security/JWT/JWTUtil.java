@@ -34,6 +34,7 @@ public class JWTUtil {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("name", userDetails.getFullName());
+        claims.put("profilePicUrl", userDetails.getUser().getProfilePicUrl());
         claims.put("roles", userDetails.getAuthorities().stream()
                 .map(auth -> auth.getAuthority())
                 .toList());
