@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,7 +35,7 @@ public class AdminController {
 
     private final AsyncService asyncService;
 
-    @GetMapping("/ipo/fetch")
+    @PostMapping("/ipo/fetch")
     public ResponseEntity<Map<String, Object>> fetchIPO(
             @RequestParam(required = false, defaultValue = "open") String status,
             @RequestParam(required = false) String type,
@@ -51,52 +52,8 @@ public class AdminController {
 
     @PutMapping("/ipo/{id}")
     public ResponseEntity<?> updateIpo(@PathVariable UUID id, @RequestBody IPOUpdateRequestDTO ipoReq) {
-
         IPOResponseDTO ipo = ipoService.updateIpo(id, ipoReq);
         return ResponseEntity.ok(Map.of("message", "Updated Successfully", "IPO", ipo));
-
-        // ObjectMapper mapper = new ObjectMapper();
-        // mapper.registerModule(new JavaTimeModule());
-        // mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        // ipoNode.fieldNames().forEachRemaining(fieldName -> {
-        // switch (fieldName.toLowerCase()) {
-        // // case "subscriptions" -> {
-        // // List<Subscription> newSubs = Arrays.asList(
-        // // mapper.convertValue(ipoNode.get(fieldName), Subscription[].class));
-        // // ipoService.updateSubscriptions(existingIpo, newSubs);
-        // // }
-
-        // case "gmp" -> {
-        // List<GMP> newGmp = Arrays.asList(
-        // mapper.convertValue(ipoNode.get(fieldName), GMP[].class));
-        // ipoService.updateGmp(existingIpo,
-        // newGmp);
-        // }
-
-        // case "verdict" -> {
-        // String verdictStr = ipoNode.get(fieldName).asText();
-        // try {
-        // Verdict newVerdict = Verdict.valueOf(verdictStr.toUpperCase());
-        // ipoService.updateVerdict(existingIpo, newVerdict);
-        // } catch (IllegalArgumentException e) {
-        // throw new BadRequestException("Invalid Verdict Value: " + verdictStr);
-        // }
-        // }
-
-        // case "issuesize" -> {
-        // IssueSize newIssueSize = mapper.convertValue(ipoNode.get(fieldName),
-        // IssueSize.class);
-        // ipoService.updateIssueSize(existingIpo, newIssueSize);
-        // }
-
-        // default -> throw new BadRequestException("Invalid field: " + fieldName);
-
-        // }
-        // });
-
-        // IPO updatedIpo = ipoService.save(existingIpo);
-        // return ResponseEntity.ok(updatedIpo);
-
     }
 
     @DeleteMapping("/ipo/{id}")

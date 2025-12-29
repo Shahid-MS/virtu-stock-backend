@@ -21,4 +21,5 @@ public class UserResponseDTO {
     private String phone;
     private String instagramUrl;
     private String linkedinUrl;
+    private String profilePicUrl;
 }

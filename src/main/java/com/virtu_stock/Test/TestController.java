@@ -6,28 +6,36 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.virtu_stock.Cloudinary.ImageUploadService;
 import com.virtu_stock.Mail.MailService;
 import com.virtu_stock.Security.Util.AuthUtil;
 import com.virtu_stock.User.User;
 import com.virtu_stock.User.UserRepository;
 
+import lombok.RequiredArgsConstructor;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/test")
 public class TestController {
-    @Autowired
-    private MailService mailService;
-    @Autowired
-    private UserRepository userRepository;
+
+    private final MailService mailService;
+
+    private final UserRepository userRepository;
+
+    private final ImageUploadService imageUploadService;
 
     @GetMapping()
     public ResponseEntity<Map<String, Object>> fetchIPO() {
@@ -45,7 +53,7 @@ public class TestController {
             res.put("Saved Ipos", List.of(
                     Map.of(
                             "id", "1783887536",
-                            "name", "Studds Accessories Limited","type","SME")));
+                            "name", "Studds Accessories Limited", "type", "SME")));
 
             // Exists IPOs
             res.put("Exists Ipos", List.of(
@@ -92,5 +100,22 @@ public class TestController {
         userRepository.delete(user);
 
         return ResponseEntity.ok("User deleted Successfully");
+    }
+
+    @PostMapping("/upload/{userId}")
+    public ResponseEntity<?> uploadImage(
+            @PathVariable String userId,
+            @RequestParam("file") MultipartFile file) {
+        System.out.println("inside upload " + file);
+        String imageUrl = imageUploadService.uploadImage(
+                file,
+                "virtustock",
+                "profile",
+                userId);
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "message", "Image uploaded successfully",
+                        "imageUrl", imageUrl));
     }
 }
