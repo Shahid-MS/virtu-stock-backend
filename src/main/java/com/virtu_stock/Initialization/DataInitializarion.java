@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import java.util.Optional;
+import java.util.Set;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
@@ -30,9 +31,9 @@ public class DataInitializarion implements CommandLineRunner {
         boolean datainit = false;
 
         if (datainit) {
-            Optional<User> userOptional = userRepository.findByEmail("ms2.o.edu@gmail.com");
+            Optional<User> userOptional = userRepository.findByEmail("ms2.o.works@gmail.com");
             User user = userOptional.get();
-            List<Role> userRoles = user.getRoles();
+            Set<Role> userRoles = user.getRoles();
             userRoles.removeAll(userRoles);
             // userRoles.add(Role.ROLE_ADMIN);
             userRoles.add(Role.ROLE_USER);

@@ -1,9 +1,7 @@
 package com.virtu_stock.Admin;
 
-import java.util.HashMap;
-
 import java.util.Map;
-
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
@@ -18,11 +16,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.virtu_stock.Configurations.AppConstants;
+import com.virtu_stock.Enum.Role;
 import com.virtu_stock.IPO.IPOResponseDTO;
 import com.virtu_stock.IPO.IPOService;
 import com.virtu_stock.IPO.IPOUpdateRequestDTO;
-
+import com.virtu_stock.Pagination.PageResponseDTO;
 import com.virtu_stock.Security.Util.AuthUtil;
+import com.virtu_stock.User.User;
+import com.virtu_stock.User.UserResponseDTO;
+import com.virtu_stock.User.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -32,8 +35,8 @@ import lombok.RequiredArgsConstructor;
 public class AdminController {
 
     private final IPOService ipoService;
-
     private final AsyncService asyncService;
+    private final UserService userService;
 
     @PostMapping("/ipo/fetch")
     public ResponseEntity<Map<String, Object>> fetchIPO(
@@ -43,11 +46,9 @@ public class AdminController {
         String email = AuthUtil.getCurrentUserEmail();
 
         asyncService.fetchIPOInBackground(status, type, limit, email);
-        Map<String, Object> res = new HashMap<>();
-        res.put("message", "IPO fetch process started");
-        res.put("note", "You will receive an email once the task is completed");
 
-        return ResponseEntity.ok(res);
+        return ResponseEntity.ok(
+                Map.of("message", "IPO fetch process started. You will receive an email once the task is completed"));
     }
 
     @PutMapping("/ipo/{id}")
@@ -56,10 +57,61 @@ public class AdminController {
         return ResponseEntity.ok(Map.of("message", "Updated Successfully", "IPO", ipo));
     }
 
+    @GetMapping("/count")
+    public ResponseEntity<?> countUsers() {
+        long countUsers = userService.countUsers();
+        double userPercentageGrowth = userService.userPercentageGrowth();
+        long countIpo = ipoService.countIpos();
+        double ipoPercentageGrowth = ipoService.ipoPercentageGrowth();
+
+        return ResponseEntity.ok(Map.of("totalUsers", countUsers, "userPercentageGrowth", userPercentageGrowth,
+                "totalIpos", countIpo, "ipoPercentageGrowth", ipoPercentageGrowth));
+    }
+
+    @GetMapping("/user")
+    public ResponseEntity<PageResponseDTO<UserResponseDTO>> findAllUsers(
+            @RequestParam(defaultValue = AppConstants.PAGE_NUMBER) int page,
+            @RequestParam(defaultValue = AppConstants.PAGE_SIZE) int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") String sortDir) {
+        // Integer.parseInt(AppConstants.PAGE_SIZE)
+
+        return ResponseEntity.ok(userService.findAll(page, size, sortBy, sortDir));
+    }
+
+    @PostMapping("/user/role")
+    public ResponseEntity<?> assignAdmin(
+            @RequestParam UUID userId,
+            @RequestParam boolean assignAdmin) {
+        User user = userService.findById(userId);
+
+        Set<Role> roles = user.getRoles();
+
+        if (assignAdmin) {
+            roles.add(Role.ROLE_ADMIN);
+        } else {
+            roles.remove(Role.ROLE_ADMIN);
+        }
+
+        user.setRoles(roles);
+        userService.save(user);
+
+        return ResponseEntity.ok(
+                Map.of("message",
+                        assignAdmin
+                                ? user.getFirstName() + " promoted to Admin"
+                                : "Admin role removed from " + user.getFirstName()));
+    }
+
+    @DeleteMapping("/user/{id}")
+    public ResponseEntity<?> deleteUser(@PathVariable UUID id) {
+        userService.deleteById(id);
+        return ResponseEntity.ok(Map.of("message", "User deleted successfully"));
+    }
+
     @DeleteMapping("/ipo/{id}")
-    public ResponseEntity<?> DeleteIpo(@PathVariable UUID id) {
-        ipoService.findById(id);
+    public ResponseEntity<?> deleteIpo(@PathVariable UUID id) {
         ipoService.deleteById(id);
-        return ResponseEntity.ok().body("IPO deleted with id: " + id);
+        return ResponseEntity.ok(Map.of("message", "Ipo deleted successfully"));
     }
 }

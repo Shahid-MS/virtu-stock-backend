@@ -1,6 +1,7 @@
 package com.virtu_stock.IPO;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,6 +16,8 @@ public interface IPORepository extends JpaRepository<IPO, UUID>, JpaSpecificatio
     public List<IPO> findAllByOrderByEndDateDesc();
 
     public List<IPO> findByListingDateLessThanEqual(LocalDate date);
+
+    long countByStartDateBetween(LocalDate start, LocalDate end);
 
     public List<IPO> findByNameContainingIgnoreCaseOrSymbolContainingIgnoreCaseOrderByName(String name, String symbol);
 

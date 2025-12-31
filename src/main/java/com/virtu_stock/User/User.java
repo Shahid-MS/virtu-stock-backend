@@ -1,7 +1,9 @@
 package com.virtu_stock.User;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.HashSet;
+
+import java.util.Set;
 import java.util.UUID;
 
 import com.virtu_stock.Enum.Role;
@@ -72,9 +74,11 @@ public class User {
     @Enumerated(EnumType.STRING)
     @CollectionTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"))
     @Column(name = "role")
-    private List<Role> roles;
+    private Set<Role> roles = new HashSet<>();
+
     private boolean enabled;
-    @Column(name = "created_At")
+
+    @Column(name = "created_At", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     @Pattern(regexp = "^(https?://)?(www\\.)?linkedin\\.com/.*$", message = "Invalid LinkedIn profile URL")
@@ -103,6 +107,11 @@ public class User {
     }
 
     @PrePersist
+    private void beforeSave() {
+        updateFullName();
+        this.createdAt = LocalDateTime.now();
+    }
+
     @PreUpdate
     private void updateFullName() {
         if (firstName != null && lastName != null)

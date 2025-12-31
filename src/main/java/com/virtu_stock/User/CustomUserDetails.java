@@ -1,7 +1,7 @@
 package com.virtu_stock.User;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Set;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,7 +21,7 @@ public class CustomUserDetails implements UserDetails {
         return user.getFullName();
     }
 
-    public List<Role> getRoles() {
+    public Set<Role> getRoles() {
         return user.getRoles();
     }
 
