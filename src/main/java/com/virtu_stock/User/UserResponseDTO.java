@@ -1,6 +1,7 @@
 package com.virtu_stock.User;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import com.virtu_stock.Enum.Role;
@@ -17,7 +18,7 @@ public class UserResponseDTO {
     private String firstName;
     private String lastName;
     private String email;
-    private List<Role> roles;
+    private Set<Role> roles;
     private String phone;
     private String instagramUrl;
     private String linkedinUrl;

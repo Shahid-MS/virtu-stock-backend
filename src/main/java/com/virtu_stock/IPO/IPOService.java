@@ -144,6 +144,9 @@ public class IPOService {
     }
 
     public void deleteById(UUID id) {
+        if (!ipoRepository.existsById(id)) {
+            throw new ResourceNotFoundException("IPO", "id", id);
+        }
         ipoRepository.deleteById(id);
     }
 
@@ -164,6 +167,29 @@ public class IPOService {
         List<IPO> search = ipoRepository.findByNameContainingIgnoreCaseOrSymbolContainingIgnoreCaseOrderByName(query,
                 query);
         return search.stream().limit(7).toList();
+    }
+
+    public long countIpos() {
+        return ipoRepository.count();
+    }
+
+    public double ipoPercentageGrowth() {
+        LocalDate today = LocalDate.now();
+        LocalDate startOfThisMonth = today.withDayOfMonth(1);
+        LocalDate startOfNextMonth = startOfThisMonth.plusMonths(1);
+        LocalDate startOfLastMonth = startOfThisMonth.minusMonths(1);
+
+        long thisMonthIpos = ipoRepository.countByStartDateBetween(
+                startOfThisMonth, startOfNextMonth.minusDays(1));
+
+        long lastMonthIpos = ipoRepository.countByStartDateBetween(
+                startOfLastMonth, startOfThisMonth.minusDays(1));
+
+        if (lastMonthIpos == 0) {
+            return thisMonthIpos > 0 ? 100.0 : 0.0;
+        }
+
+        return ((double) (thisMonthIpos - lastMonthIpos) / lastMonthIpos) * 100;
     }
 
 }

@@ -91,7 +91,7 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(Map.of(
-                        "message", "User Saved Successfully",
+                        "message", "User Created Successfully",
                         "user", res));
     }
 
