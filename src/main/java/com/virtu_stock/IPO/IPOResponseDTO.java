@@ -51,6 +51,7 @@ public class IPOResponseDTO {
     private List<GMP> gmp;
     private Double listingReturn;
     private Double listingReturnPercent;
+    private String subscriptionLastUpdated;
 
     public void normalizeSubscriptionsOrder() {
         if (subscriptions == null || subscriptions.isEmpty())
