@@ -1,6 +1,5 @@
 package com.virtu_stock.User;
 
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
