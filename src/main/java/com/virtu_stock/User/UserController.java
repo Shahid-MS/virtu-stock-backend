@@ -12,15 +12,18 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.virtu_stock.Exceptions.CustomExceptions.BadRequestException;
-
+import com.virtu_stock.Feedback.RatingRequestDTO;
+import com.virtu_stock.Feedback.RatingService;
 import com.virtu_stock.Security.JWT.JWTUtil;
+
+import jakarta.validation.Valid;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,6 +36,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final RatingService ratingService;
     private final ModelMapper modelMapper;
     private final ImageUploadService imageUploadService;
     private final JWTUtil jwtUtil;
@@ -74,4 +78,20 @@ public class UserController {
         return ResponseEntity.ok(
                 Map.of("virtustock-token", newJwt));
     }
+
+    @PostMapping("/rating")
+    public ResponseEntity<?> rate(Principal principal, @RequestBody @Valid RatingRequestDTO req) {
+        User user = userService.findByEmail(principal.getName());
+        ratingService.rate(user, req);
+        return ResponseEntity.ok(Map.of("message", "Thanks for your Feedback"));
+    }
+
+    @GetMapping("/rating")
+    public ResponseEntity<?> ratedByUser(Principal principal) {
+        User user = userService.findByEmail(principal.getName());
+        Integer ratingByUSer = ratingService.ratedByUser(user);
+        return ResponseEntity.ok(Map.of("rating", ratingByUSer));
+    }
+
+
 }

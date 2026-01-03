@@ -116,11 +116,6 @@ public class IPO {
     @Column(name = "risk")
     private List<String> risks;
 
-    // @ElementCollection
-    // @CollectionTable(name = "subscription", joinColumns = @JoinColumn(name =
-    // "ipo_id"))
-    // private List<Subscription> subscriptions;
-
     @ElementCollection
     @CollectionTable(name = "subscription", joinColumns = @JoinColumn(name = "ipo_id"))
     @MapKeyColumn(name = "name")

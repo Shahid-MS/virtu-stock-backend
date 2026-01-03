@@ -424,4 +424,40 @@ public class MailService {
         return sb.toString();
     }
 
+    public void sendQueryEmail(String to, String message) {
+        String subject = "New Support Query - VirtuStock";
+
+        String htmlContent = """
+                <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f9fafc; padding: 30px;">
+                  <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 10px;
+                              box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 25px;">
+
+                    <div style="text-align:center;">
+                      <img src="cid:logo" alt="VirtuStock" style="width:140px; margin-bottom:20px;">
+                      <h2 style="color:#1d2939;">New Support Query</h2>
+                    </div>
+
+
+
+                    <div style="margin-top:15px; padding:15px; background:#f1f5f9; border-radius:6px;">
+                      <p style="color:#333; white-space: pre-line;">%s</p>
+                    </div>
+
+                    <p style="color:#999; font-size:12px; margin-top:30px; text-align:center;">
+                      &copy; %s VirtuStock. All rights reserved.
+                    </p>
+                  </div>
+                </div>
+                """
+                .formatted(
+
+                        message,
+                        LocalDate.now().getYear());
+
+        sendHtmlMailWithCC(
+                to,
+                subject,
+                htmlContent);
+    }
+
 }
