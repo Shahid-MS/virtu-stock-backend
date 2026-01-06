@@ -1,5 +1,7 @@
 package com.virtu_stock.Admin;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -61,11 +63,20 @@ public class AdminController {
     public ResponseEntity<?> countUsers() {
         long countUsers = userService.countUsers();
         double userPercentageGrowth = userService.userPercentageGrowth();
+        double roundedValueUserPercentageGrowth = BigDecimal
+                .valueOf(userPercentageGrowth)
+                .setScale(2, RoundingMode.HALF_UP)
+                .doubleValue();
         long countIpo = ipoService.countIpos();
         double ipoPercentageGrowth = ipoService.ipoPercentageGrowth();
+        double roundedValueIpoPercentageGrowth = BigDecimal
+                .valueOf(ipoPercentageGrowth)
+                .setScale(2, RoundingMode.HALF_UP)
+                .doubleValue();
 
-        return ResponseEntity.ok(Map.of("totalUsers", countUsers, "userPercentageGrowth", userPercentageGrowth,
-                "totalIpos", countIpo, "ipoPercentageGrowth", ipoPercentageGrowth));
+        return ResponseEntity
+                .ok(Map.of("totalUsers", countUsers, "userPercentageGrowth", roundedValueUserPercentageGrowth,
+                        "totalIpos", countIpo, "ipoPercentageGrowth", roundedValueIpoPercentageGrowth));
     }
 
     @GetMapping("/user")
