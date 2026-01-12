@@ -93,5 +93,4 @@ public class UserController {
         return ResponseEntity.ok(Map.of("rating", ratingByUSer));
     }
 
-
 }

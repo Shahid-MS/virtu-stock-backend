@@ -55,7 +55,7 @@ public class ImageUploadService {
             throw new BadRequestException("Only JPG, JPEG, and PNG images are allowed");
         }
 
-        if (file.getSize() > 2 * 1024 * 1024) {
+        if (file.getSize() > 10 * 1024 * 1024) {
             throw new BadRequestException("Max file size is 2MB");
         }
     }

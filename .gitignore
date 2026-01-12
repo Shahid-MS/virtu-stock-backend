@@ -6,6 +6,10 @@ target/
 
 src/main/resources/application.properties
 
+# docker
+Dockerfile
+*.dockerignore
+
 ### STS ###
 .apt_generated
 .classpath

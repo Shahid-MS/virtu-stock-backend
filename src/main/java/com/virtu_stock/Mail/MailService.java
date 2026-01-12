@@ -19,6 +19,7 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,6 +41,7 @@ public class MailService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    @Async
     public void sendHtmlMail(String to, String subject, String htmlBody) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -61,6 +63,7 @@ public class MailService {
         }
     }
 
+    @Async
     public void sendHtmlMailWithCC(String to, String subject, String htmlBody) {
         try {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
@@ -97,6 +100,7 @@ public class MailService {
         }
     }
 
+    @Async
     public void sendOTPForRegistration(String to, String otp) {
         String subject = "OTP for Registration";
         String htmlContent = """
@@ -117,6 +121,7 @@ public class MailService {
         sendHtmlMail(to, subject, htmlContent);
     }
 
+    @Async
     public void sendWelcomeEmail(String to, String name) {
         String subject = "Welcome to VirtuStock 🎉";
         String htmlContent = """
@@ -135,6 +140,7 @@ public class MailService {
         sendHtmlMailWithCC(to, subject, htmlContent);
     }
 
+    @Async
     public void sendOTPForForgotPassword(String to, String otp) {
         String subject = "Account Recovery - VirtuStock";
 
@@ -161,6 +167,7 @@ public class MailService {
         sendHtmlMail(to, subject, htmlContent);
     }
 
+    @Async
     public void sendPasswordResetMail(String to, String name) {
         String subject = "Account Secure - Password Reset Successful";
         String htmlContent = """
@@ -424,6 +431,7 @@ public class MailService {
         return sb.toString();
     }
 
+    @Async
     public void sendQueryEmail(String to, String message) {
         String subject = "New Support Query - VirtuStock";
 

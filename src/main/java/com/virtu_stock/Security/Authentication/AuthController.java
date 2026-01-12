@@ -112,7 +112,6 @@ public class AuthController {
         // .body(Map.of("message", "Invalid email. Please enter a valid email
         // address."));
         // }
-
         otpService.generateAndSendOtp(email, OTPPurpose.SIGN_UP);
         return ResponseEntity.ok(Map.of("message", "OTP sent successfully to " + email + ". Valid for 5 minutes"));
 
