@@ -11,7 +11,6 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.mail.MailException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -144,15 +143,6 @@ public class GlobalExceptionsHandler {
                         "status", 400,
                         "error", "INVALID_REQUEST_BODY",
                         "message", "Request body is missing or malformed"));
-    }
-
-    @ExceptionHandler(MailException.class)
-    public ResponseEntity<?> handleMailException(org.springframework.mail.MailException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                .body(buildErrorResponse(
-                        "MAIL_ERROR",
-                        "Failed to send email. Please try again later.",
-                        HttpStatus.BAD_GATEWAY));
     }
 
     @ExceptionHandler(AccessDeniedException.class)

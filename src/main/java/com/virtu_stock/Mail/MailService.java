@@ -1,5 +1,6 @@
 package com.virtu_stock.Mail;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Hashtable;
@@ -13,77 +14,82 @@ import javax.naming.directory.DirContext;
 import javax.naming.directory.InitialDirContext;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ClassPathResource;
-
-import org.springframework.mail.MailException;
-import org.springframework.mail.MailSendException;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.virtu_stock.Exceptions.CustomExceptions.EmailFormattingException;
-import com.virtu_stock.Exceptions.CustomExceptions.InvalidEmailAddressException;
-import com.virtu_stock.Exceptions.CustomExceptions.MailDeliveryException;
-
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
+import com.sendgrid.helpers.mail.objects.Personalization;
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class MailService {
-    private final JavaMailSender mailSender;
 
-    @Value("${mail.default.cc:}")
+    @Value("${grid.default.cc}")
     private String defaultCc;
+
+    @Value("${grid.api.key}")
+    private String gridApiKey;
+
+    @Value("${grid.from.mail}")
+    private String fromMail;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Async
     public void sendHtmlMail(String to, String subject, String htmlBody) {
+        Email from = new Email(fromMail);
+        Email toEmail = new Email(to);
+        Content content = new Content("text/html", htmlBody);
+        Mail mail = new Mail(from, subject, toEmail, content);
+        SendGrid sendGrid = new SendGrid(gridApiKey);
+        Request request = new Request();
         try {
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(htmlBody, true);
-            helper.addInline("logo", new ClassPathResource("static/Images/logo/logo-name.png"));
-
-            mailSender.send(mimeMessage);
-
-        } catch (MailSendException e) {
-            throw new InvalidEmailAddressException("Invalid email: " + to);
-        } catch (MailException e) {
-            throw new MailDeliveryException("Failed to send email to: " + to);
-        } catch (MessagingException e) {
-            throw new EmailFormattingException("Email formatting error");
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            sendGrid.api(request);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to send email", e);
         }
     }
 
     @Async
     public void sendHtmlMailWithCC(String to, String subject, String htmlBody) {
-        try {
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-            helper.setTo(to);
-            helper.setSubject(subject);
-            helper.setText(htmlBody, true);
-            helper.addInline("logo", new ClassPathResource("static/Images/logo/logo-name.png"));
-            if (defaultCc != null && !defaultCc.isBlank()) {
-                String[] ccList = defaultCc.split(",");
-                helper.setCc(ccList);
-            }
-            mailSender.send(mimeMessage);
+        Email from = new Email(fromMail);
+        Email toEmail = new Email(to);
+        Content content = new Content("text/html", htmlBody);
 
-        } catch (MailSendException e) {
-            throw new InvalidEmailAddressException("Invalid Email: " + to);
-        } catch (MailException e) {
-            throw new MailDeliveryException("Failed to send email to: " + to);
-        } catch (MessagingException e) {
-            throw new EmailFormattingException("Email formatting error");
+        Mail mail = new Mail();
+        mail.setFrom(from);
+        mail.setSubject(subject);
+        mail.addContent(content);
+
+        Personalization personalization = new Personalization();
+        personalization.addTo(toEmail);
+
+        if (defaultCc != null && !defaultCc.isBlank()) {
+            personalization.addCc(new Email(defaultCc));
+        }
+
+        mail.addPersonalization(personalization);
+
+        SendGrid sendGrid = new SendGrid(gridApiKey);
+        Request request = new Request();
+
+        try {
+            request.setMethod(Method.POST);
+            request.setEndpoint("mail/send");
+            request.setBody(mail.build());
+            sendGrid.api(request);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to send email", e);
         }
     }
 
@@ -107,7 +113,6 @@ public class MailService {
                                                 <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f9fafc; padding: 30px;">
                   <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 10px;
                               box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 25px; text-align: center;">
-                    <img src="cid:logo" alt="VirtuStock" style="width:140px; margin-bottom:20px;">
                     <h2 style="color:#1d2939;">Verify Your Email</h2>
                     <p style="color:#555;">To complete your registration, please use the OTP below:</p>
                     <h1 style="color:#007bff; letter-spacing: 3px; margin: 20px 0;">%s</h1>
@@ -127,11 +132,10 @@ public class MailService {
         String htmlContent = """
                                    <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f9fafc; padding: 30px;">
                   <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 25px; text-align: center;">
-                    <img src="cid:logo" alt="VirtuStock" style="width:140px; margin-bottom:20px;">
                     <h2 style="color:#1d2939;">Welcome to VirtuStock!</h2>
                     <p style="color:#555;">Hi <b>%s</b>, we're thrilled to have you join our investing community.</p>
                     <p style="color:#555;">You’re all set to explore stock trends, analyze IPOs and make smarter investment decisions.</p>
-                    <a href="https://virtustock.in/login" style="display:inline-block; margin-top:15px; background:#1d2939; color:white; text-decoration:none; padding:10px 25px; border-radius:6px;">Get Started</a>
+                    <a href="https://virtustock.in/signin" style="display:inline-block; margin-top:15px; background:#1d2939; color:white; text-decoration:none; padding:10px 25px; border-radius:6px;">Get Started</a>
                     <p style="color:#999; font-size:12px; margin-top:30px;">&copy; %s VirtuStock. All rights reserved.</p>
                   </div>
                 </div>
@@ -148,7 +152,6 @@ public class MailService {
                     <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f6f8; padding: 30px;">
                       <div style="max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 10px;
                                   box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 25px; text-align: center;">
-                        <img src="cid:logo" alt="VirtuStock" style="width:140px; margin-bottom:20px;">
                         <h2 style="color:#1d2939;">Reset Your Password</h2>
                         <p style="color:#555;">We received a request to reset your VirtuStock account password.</p>
                         <p style="color:#555;">Use the following One-Time Password (OTP) to proceed:</p>
@@ -174,12 +177,11 @@ public class MailService {
                                                  <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f9fafc; padding: 30px;">
                   <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 10px;
                               box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 25px; text-align: center;">
-                    <img src="cid:logo" alt="VirtuStock" style="width:140px; margin-bottom:20px;">
                     <h2 style="color:#1d2939;">Your Password Has Been Reset</h2>
                     <p style="color:#555;">Hi <b>%s</b>, your VirtuStock account password was successfully updated.</p>
                     <p style="color:#555;">If you made this change, you can safely ignore this message.</p>
                     <p style="color:#555;">If you didn’t reset your password, please <a href="https://virtustock.in/forgot-password" style="color:#007bff; text-decoration:none;">reset it again</a> immediately or contact our support team.</p>
-                    <a href="https://virtustock.in/login" style="display:inline-block; margin-top:20px; background:#1d2939; color:white; text-decoration:none; padding:10px 25px; border-radius:6px;">Login to VirtuStock</a>
+                    <a href="https://virtustock.in/signin" style="display:inline-block; margin-top:20px; background:#1d2939; color:white; text-decoration:none; padding:10px 25px; border-radius:6px;">Login to VirtuStock</a>
                     <p style="color:#999; font-size:12px; margin-top:30px;">&copy; %s VirtuStock. All rights reserved.</p>
                   </div>
                 </div>
@@ -201,7 +203,6 @@ public class MailService {
                                         <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="background:#ffffff; border-radius:10px; padding:25px; border:1px solid #e5e7eb; max-width: 600px;">
                                             <tr>
                                                 <td align="center" style="padding:20px;">
-                                                    <img src="cid:logo" alt="VirtuStock" width="150" style="display:block; margin-bottom:20px;">
                                                     <h2 style="color:#1d2939; font-size:22px; margin:0 0 10px;">IPO Fetch Summary Report</h2>
                                                     <p style="color:#555; font-size:14px; margin:0 0 20px;">
                                                         Here’s the latest status from your IPO alert fetch operation:
@@ -286,8 +287,6 @@ public class MailService {
                                        border:1px solid #e5e7eb; max-width:600px;">
                                     <tr>
                                         <td align="center" style="padding:20px;">
-                                            <img src="cid:logo" alt="VirtuStock" width="150"
-                                                 style="display:block; margin-bottom:20px;">
                                             <h2 style="color:#d92d20; font-size:22px; margin:0 0 10px;">
                                                 %s Failed
                                             </h2>
@@ -441,7 +440,6 @@ public class MailService {
                               box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 25px;">
 
                     <div style="text-align:center;">
-                      <img src="cid:logo" alt="VirtuStock" style="width:140px; margin-bottom:20px;">
                       <h2 style="color:#1d2939;">New Support Query</h2>
                     </div>
 

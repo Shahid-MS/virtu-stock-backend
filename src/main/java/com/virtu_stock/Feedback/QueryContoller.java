@@ -33,6 +33,7 @@ public class QueryContoller {
             email = req.getEmail();
         }
         mailService.sendQueryEmail(email, req.getMessage());
-        return ResponseEntity.ok(Map.of("message", "Your Query is Submitted. We will get back to you Soon"));
+        return ResponseEntity.ok(Map.of("message",
+                "Your query has been submitted successfully. We’ll get back to you soon. We’ve also sent you a confirmation email—if you don’t see it in your inbox, please check your spam folder."));
     }
 }

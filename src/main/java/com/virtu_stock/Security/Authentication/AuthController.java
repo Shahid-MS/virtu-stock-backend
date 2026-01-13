@@ -91,14 +91,14 @@ public class AuthController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(Map.of(
-                        "message", "User Created Successfully",
+                        "message",
+                        "Sign up successful. We’ve also sent you an onboarding email. If you don’t see it in your inbox, please check your spam folder.",
                         "user", res));
     }
 
     @PostMapping("/register/send-otp")
     public ResponseEntity<?> sendOtp(@Valid @RequestBody EmailRequestDTO request) {
         String email = request.getEmail();
-
         if (!mailService.hasMXRecord(email)) {
             throw new BadRequestException("Invalid email domain. Please enter a valid email address.");
         }
@@ -113,7 +113,8 @@ public class AuthController {
         // address."));
         // }
         otpService.generateAndSendOtp(email, OTPPurpose.SIGN_UP);
-        return ResponseEntity.ok(Map.of("message", "OTP sent successfully to " + email + ". Valid for 5 minutes"));
+        return ResponseEntity.ok(Map.of("message", "OTP sent successfully to " + email
+                + ". Valid for 5 minutes If you don’t see it in your inbox, please check your spam folder."));
 
     }
 
@@ -145,7 +146,8 @@ public class AuthController {
             throw new ResourceNotFoundException("User", "email", email);
         }
         otpService.generateAndSendOtp(email, OTPPurpose.FORGOT_PASSWORD);
-        return ResponseEntity.ok(Map.of("message", "OTP sent successfully to " + email + ". Valid for 5 minutes."));
+        return ResponseEntity.ok(Map.of("message", "OTP sent successfully to " + email
+                + ". Valid for 5 minutes.If you don’t see it in your inbox, please check your spam folder."));
 
     }
 
@@ -193,7 +195,8 @@ public class AuthController {
         User savedUser = userService.setPassword(email, password);
         otpService.deleteByEmailAndPurpose(savedUser.getEmail(), OTPPurpose.FORGOT_PASSWORD);
         mailService.sendPasswordResetMail(savedUser.getEmail(), savedUser.getFirstName());
-        return ResponseEntity.ok(Map.of("message", "Password Succesfully updated"));
+        return ResponseEntity.ok(Map.of("message",
+                "Password Succesfully updated. We’ve sent you a confirmation email. If you don’t see it in your inbox, please check your spam folder."));
 
     }
 
