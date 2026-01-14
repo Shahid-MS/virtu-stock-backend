@@ -22,7 +22,6 @@ public class OTPService {
 
     public void generateAndSendOtp(String email, OTPPurpose purpose) {
         String otp = String.format("%06d", random.nextInt(999999));
-        System.out.println("Inside otp");
         otpRepository.findByEmailAndPurpose(email, purpose)
                 .ifPresent(existing -> otpRepository.delete(existing));
         OTP otpEntity = new OTP(email, otp, LocalDateTime.now(), purpose, false);
