@@ -44,7 +44,7 @@ public class MailService {
 
     @Async
     public void sendHtmlMail(String to, String subject, String htmlBody) {
-        Email from = new Email(fromMail);
+        Email from = new Email(fromMail, "VirtuStock (No Reply)");
         Email toEmail = new Email(to);
         Content content = new Content("text/html", htmlBody);
         Mail mail = new Mail(from, subject, toEmail, content);
@@ -113,6 +113,7 @@ public class MailService {
                                                 <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f9fafc; padding: 30px;">
                   <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 10px;
                               box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 25px; text-align: center;">
+                    <img src="https://res.cloudinary.com/ms2o/image/upload/v1768293452/logo-name_hfiexu.png" alt="VirtuStock" style="width:140px; margin-bottom:20px;">
                     <h2 style="color:#1d2939;">Verify Your Email</h2>
                     <p style="color:#555;">To complete your registration, please use the OTP below:</p>
                     <h1 style="color:#007bff; letter-spacing: 3px; margin: 20px 0;">%s</h1>
@@ -132,6 +133,7 @@ public class MailService {
         String htmlContent = """
                                    <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f9fafc; padding: 30px;">
                   <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 25px; text-align: center;">
+                    <img src="https://res.cloudinary.com/ms2o/image/upload/v1768293452/logo-name_hfiexu.png" alt="VirtuStock" style="width:140px; margin-bottom:20px;">
                     <h2 style="color:#1d2939;">Welcome to VirtuStock!</h2>
                     <p style="color:#555;">Hi <b>%s</b>, we're thrilled to have you join our investing community.</p>
                     <p style="color:#555;">You’re all set to explore stock trends, analyze IPOs and make smarter investment decisions.</p>
@@ -152,6 +154,7 @@ public class MailService {
                     <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f4f6f8; padding: 30px;">
                       <div style="max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 10px;
                                   box-shadow: 0 2px 8px rgba(0,0,0,0.1); padding: 25px; text-align: center;">
+                          <img src="https://res.cloudinary.com/ms2o/image/upload/v1768293452/logo-name_hfiexu.png" alt="VirtuStock" style="width:140px; margin-bottom:20px;">
                         <h2 style="color:#1d2939;">Reset Your Password</h2>
                         <p style="color:#555;">We received a request to reset your VirtuStock account password.</p>
                         <p style="color:#555;">Use the following One-Time Password (OTP) to proceed:</p>
@@ -165,7 +168,8 @@ public class MailService {
                         </p>
                       </div>
                     </div>
-                """.formatted(otp, LocalDate.now().getYear());
+                """
+                .formatted(otp, LocalDate.now().getYear());
 
         sendHtmlMail(to, subject, htmlContent);
     }
@@ -177,6 +181,7 @@ public class MailService {
                                                  <div style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #f9fafc; padding: 30px;">
                   <div style="max-width: 500px; margin: 0 auto; background: white; border-radius: 10px;
                               box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 25px; text-align: center;">
+                      <img src="https://res.cloudinary.com/ms2o/image/upload/v1768293452/logo-name_hfiexu.png" alt="VirtuStock" style="width:140px; margin-bottom:20px;">
                     <h2 style="color:#1d2939;">Your Password Has Been Reset</h2>
                     <p style="color:#555;">Hi <b>%s</b>, your VirtuStock account password was successfully updated.</p>
                     <p style="color:#555;">If you made this change, you can safely ignore this message.</p>
@@ -203,6 +208,7 @@ public class MailService {
                                         <table role="presentation" width="100%%" cellspacing="0" cellpadding="0" style="background:#ffffff; border-radius:10px; padding:25px; border:1px solid #e5e7eb; max-width: 600px;">
                                             <tr>
                                                 <td align="center" style="padding:20px;">
+                                                  <img src="https://res.cloudinary.com/ms2o/image/upload/v1768293452/logo-name_hfiexu.png" alt="VirtuStock" style="width:140px; margin-bottom:20px;">
                                                     <h2 style="color:#1d2939; font-size:22px; margin:0 0 10px;">IPO Fetch Summary Report</h2>
                                                     <p style="color:#555; font-size:14px; margin:0 0 20px;">
                                                         Here’s the latest status from your IPO alert fetch operation:
@@ -287,6 +293,7 @@ public class MailService {
                                        border:1px solid #e5e7eb; max-width:600px;">
                                     <tr>
                                         <td align="center" style="padding:20px;">
+                                            <img src="https://res.cloudinary.com/ms2o/image/upload/v1768293452/logo-name_hfiexu.png" alt="VirtuStock" style="width:140px; margin-bottom:20px;">
                                             <h2 style="color:#d92d20; font-size:22px; margin:0 0 10px;">
                                                 %s Failed
                                             </h2>
@@ -440,6 +447,7 @@ public class MailService {
                               box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 25px;">
 
                     <div style="text-align:center;">
+                        <img src="https://res.cloudinary.com/ms2o/image/upload/v1768293452/logo-name_hfiexu.png" alt="VirtuStock" style="width:140px; margin-bottom:20px;">
                       <h2 style="color:#1d2939;">New Support Query</h2>
                     </div>
 
